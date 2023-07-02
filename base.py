@@ -59,6 +59,8 @@ class HornFormula:
 
     def __str__(self):
         f0 = map(str, self.clauses)
+        if(self.clauses.__len__() <= 0):
+            return "True"
         return "∧".join(f0)
 
     def vars(self) -> list[str]:
@@ -92,8 +94,14 @@ class HornFormula:
         for i in range(math.floor(math.pow(2, len(vars)))):
             e = self.make_example(bin(i)[2:].zfill(len(vars))) # hacky way to generate all possibilities
 
-            if self.is_member(e) != f.is_member(e):
+            resultSelf = self.is_member(e)
+            resultF = f.is_member(e)
+            if  resultSelf != resultF:
+                print(f"Assignment {e}\tNot equivalent:\tThe clause '{self} = {resultSelf}' is not equivalent with the clause '{f} = {resultF}'.")
                 return False, e
+            else:
+                print(f"Assignment {e}\tEquivalent:\tThe clause '{self} = {resultSelf}' is equivalent with clause '{f} = {resultF}'")
+        print(f"The clause '{self}' is equivalent with the clause '{f}'")
         return True, None
 
 def covers(e: Example, c: HornClause) -> bool:
@@ -107,6 +115,11 @@ def violates(e: Example, c: HornClause) -> bool:
     else:
         return not e[c.consequent]
 
+#
+# for each example:
+# take all true variable and for each false variable and generate a clause with: 
+# antecedent (using all true variables) and consequent (using the false variable)
+# + also append a clause with the consequent false
 def gen_clauses(examples: list[Example]) -> list[HornClause]:
     clauses = []
     for e in examples:
